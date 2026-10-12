@@ -19,6 +19,7 @@ app.get("/students", async (req, res) => {
 
         res.json(result.rows);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -36,6 +37,7 @@ app.post("/students", async (req, res) => {
 
         res.status(201).json(result.rows[0]);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -65,6 +67,7 @@ app.put("/students/:id", async (req, res) => {
 
         res.json(result.rows[0]);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -89,6 +92,7 @@ app.delete("/students/:id", async (req, res) => {
             student: result.rows[0]
         });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 });

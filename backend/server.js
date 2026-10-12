@@ -12,21 +12,87 @@ app.get("/", (req, res) => {
 });
 
 app.get("/students", async (req, res) => {
-    const result = await pool.query("SELECT * FROM students");
-    res.json(result.rows);
+    try {
+        const result = await pool.query(
+            "SELECT * FROM students ORDER BY id"
+        );
+
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 app.post("/students", async (req, res) => {
-    const { name, age, course } = req.body;
+    try {
+        const { name, email, age, department } = req.body;
 
-    const result = await pool.query(
-        "INSERT INTO students (name, age, course) VALUES ($1, $2, $3) RETURNING *",
-        [name, age, course]
-    );
+        const result = await pool.query(
+            `INSERT INTO students (name, email, age, department)
+             VALUES ($1, $2, $3, $4)
+             RETURNING *`,
+            [name, email, age, department]
+        );
 
-    res.json(result.rows[0]);
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put("/students/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, email, age, department } = req.body;
+
+        const result = await pool.query(
+            `UPDATE students
+             SET name = $1,
+                 email = $2,
+                 age = $3,
+                 department = $4,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $5
+             RETURNING *`,
+            [name, email, age, department, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: "Student not found"
+            });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete("/students/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await pool.query(
+            "DELETE FROM students WHERE id = $1 RETURNING *",
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: "Student not found"
+            });
+        }
+
+        res.json({
+            message: "Student deleted successfully",
+            student: result.rows[0]
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 app.listen(5000, () => {
-    console.log("Server running on port 5000");
+    console.log("Server running on http://localhost:5000");
 });
